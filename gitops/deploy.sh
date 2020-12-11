@@ -12,7 +12,7 @@ _TMP_DIR=$(mktemp -u)
 _GIT_REPO="git@github.com:budproj/k8s-manifests.git"
 _TAG="latest"
 _STAGE="develop"
-_GITOPS_DIR=$(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)
+_MANIFESTS_DIR="manifests"
 _APP_DIR=$(git rev-parse --show-toplevel)
 _APP_NAME=$(basename $_APP_DIR)
 
@@ -33,11 +33,13 @@ Usage:
   ${_ME} [<arguments>]
   ${_ME} -t | --tag
   ${_ME} -s | --stage
+  ${_ME} -m | --manifests
   ${_ME} -h | --help
 Options:
-  -t --tag     Tag for your image for this deployment (default: latest)
-  -s --stage   The stage you are deploying. It must be \x1B[36mdevelop\x1B[0m or \x1B[36mproduction\x1B[0m (default: develop)
-  -h --help    Show this screen.
+  -t --tag         Tag for your image for this deployment (default: latest)
+  -s --stage       The stage you are deploying. It must be \x1B[36mdevelop\x1B[0m or \x1B[36mproduction\x1B[0m (default: develop)
+  -m --manifests   Relative path to your repository\'s manifests folder (default: manifests)
+  -h --help        Show this screen.
 EOM
 )"
 }
@@ -85,6 +87,7 @@ parse_options() {
       -h|--help) usage >&2; exit 0;;
       -t|--tag) add_tag $2; shift;;
       -s|--stage) add_stage $2; shift;;
+      -m|--manifests) add_manifests $2; shift;;
       --endopts) shift; break;;
       *) die "invalid option: $1";;
     esac
@@ -122,6 +125,10 @@ add_stage() {
   fi
 }
 
+add_manifests() {
+  _MANIFESTS_DIR=$1
+}
+
 # Script functions
 # -------------------------------------------------------------------------------------------------
 deploy() {
@@ -146,7 +153,7 @@ ensure_environment() {
 
 update_manifest() {
   export ECR_TAG=$_TAG
-  files=$(find "${_GITOPS_DIR}/${_STAGE}" -regex '.*\.ya*ml')
+  files=$(find "${_APP_DIR}/${_MANIFESTS_DIR}/${_STAGE}" -regex '.*\.ya*ml')
 
   for file in $files; do
     filename=$(basename $file)
