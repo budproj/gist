@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-   <img src="https://media.giphy.com/media/OBYvtZaJdrvJHzV7Dg/giphy-downsized-large.gif" alt="Asian Jim (from The Office)" title="Gist header's GIF" />
+   <img src="https://media.giphy.com/media/OBYvtZaJdrvJHzV7Dg/giphy.gif" alt="Asian Jim (from The Office)" title="Gist header's GIF" />
   <br>
 </p>
 <p align="center">
