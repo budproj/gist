@@ -11,7 +11,7 @@ _ME="$(basename "${0}")"
 _TMP_DIR=$(mktemp -u)
 _GIT_REPO="git@github.com:budproj/k8s-manifests.git"
 _TAG="latest"
-_STAGE="develop"
+_STAGE="canary"
 _GITOPS_DIR=$(cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)
 _APP_DIR=$(git rev-parse --show-toplevel)
 _APP_NAME=$(basename $_APP_DIR)
@@ -36,7 +36,7 @@ Usage:
   ${_ME} -h | --help
 Options:
   -t --tag     Tag for your image for this deployment (default: latest)
-  -s --stage   The stage you are deploying. It must be \x1B[36mdevelop\x1B[0m or \x1B[36mproduction\x1B[0m (default: develop)
+  -s --stage   The stage you are deploying. It must be \x1B[36mcanary\x1B[0m or \x1B[36mstable\x1B[0m (default: canary)
   -h --help    Show this screen.
 EOM
 )"
@@ -115,9 +115,9 @@ add_tag() {
 }
 
 add_stage() {
-  allowed_environments='develop production'
+  allowed_stages='canary stable'
 
-  if [[ $allowed_environments == *"$1"* ]]; then
+  if [[ $allowed_stages == *"$1"* ]]; then
     _STAGE=$1
   fi
 }
@@ -155,7 +155,7 @@ update_manifest() {
 }
 
 commit_updates() {
-  message="(automatic) deploys \"${_APP_NAME}\" application in ${_STAGE} environment"
+  message="(automatic) deploys \"${_APP_NAME}\" application in ${_STAGE} stage"
 
   pushd $_TMP_DIR "$@">/dev/null
 
