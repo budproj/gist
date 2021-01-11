@@ -148,7 +148,6 @@ clone_required_manifests() {
 
 ensure_environment() {
   mkdir -p $_TMP_DIR/manifests/applications/$_APP_NAME
-  mkdir -p $_TMP_DIR/manifests/applications/$_APP_NAME/$_STAGE
 }
 
 update_manifest() {
@@ -157,7 +156,7 @@ update_manifest() {
 
   for file in $files; do
     filename=$(basename $file)
-    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$_STAGE/$filename
+    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$filename
   done
 }
 
