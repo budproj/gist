@@ -11,7 +11,7 @@ _ME="$(basename "${0}")"
 _TMP_DIR=$(mktemp -u)
 _GIT_REPO="git@github.com:budproj/k8s-manifests.git"
 _TAG="latest"
-_STAGE="develop"
+_STAGE="canary"
 _MANIFESTS_DIR="manifests"
 _APP_DIR=$(git rev-parse --show-toplevel)
 _APP_NAME=$(basename $_APP_DIR)
@@ -37,7 +37,7 @@ Usage:
   ${_ME} -h | --help
 Options:
   -t --tag         Tag for your image for this deployment (default: latest)
-  -s --stage       The stage you are deploying. It must be \x1B[36mdevelop\x1B[0m or \x1B[36mproduction\x1B[0m (default: develop)
+  -s --stage       The stage you are deploying. It must be \x1B[36mcanary\x1B[0m or \x1B[36mstable\x1B[0m (default: canary)
   -m --manifests   Relative path to your repository\'s manifests folder (default: manifests)
   -h --help        Show this screen.
 EOM
@@ -118,9 +118,9 @@ add_tag() {
 }
 
 add_stage() {
-  allowed_environments='develop production'
+  allowed_stages='canary stable'
 
-  if [[ $allowed_environments == *"$1"* ]]; then
+  if [[ $allowed_stages == *"$1"* ]]; then
     _STAGE=$1
   fi
 }
@@ -134,7 +134,8 @@ add_manifests() {
 deploy() {
   clone_required_manifests
   ensure_environment
-  update_manifest
+  update_common_manifest
+  update_stage_manifest
   commit_updates
   remove_tmp_dir
 }
@@ -148,21 +149,29 @@ clone_required_manifests() {
 
 ensure_environment() {
   mkdir -p $_TMP_DIR/manifests/applications/$_APP_NAME
-  mkdir -p $_TMP_DIR/manifests/applications/$_APP_NAME/$_STAGE
 }
 
-update_manifest() {
+update_common_manifest() {
+  files=$(find "${_APP_DIR}/${_MANIFESTS_DIR}" -maxdepth 1 -regex '.*\.ya*ml')
+
+  for file in $files; do
+    filename=$(basename $file)
+    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$filename
+  done
+}
+
+update_stage_manifest() {
   export ECR_TAG=$_TAG
   files=$(find "${_APP_DIR}/${_MANIFESTS_DIR}/${_STAGE}" -regex '.*\.ya*ml')
 
   for file in $files; do
     filename=$(basename $file)
-    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$_STAGE/$filename
+    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$filename
   done
 }
 
 commit_updates() {
-  message="(automatic) deploys \"${_APP_NAME}\" application in ${_STAGE} environment"
+  message="(automatic) deploys \"${_APP_NAME}\" application in ${_STAGE} stage"
 
   pushd $_TMP_DIR "$@">/dev/null
 
