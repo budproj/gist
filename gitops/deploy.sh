@@ -134,7 +134,8 @@ add_manifests() {
 deploy() {
   clone_required_manifests
   ensure_environment
-  update_manifest
+  update_common_manifest
+  update_stage_manifest
   commit_updates
   remove_tmp_dir
 }
@@ -150,7 +151,16 @@ ensure_environment() {
   mkdir -p $_TMP_DIR/manifests/applications/$_APP_NAME
 }
 
-update_manifest() {
+update_common_manifest() {
+  files=$(find "${_APP_DIR}/${_MANIFESTS_DIR}" -maxdepth 1 -regex '.*\.ya*ml')
+
+  for file in $files; do
+    filename=$(basename $file)
+    envsubst < $file > $_TMP_DIR/manifests/applications/$_APP_NAME/$filename
+  done
+}
+
+update_stage_manifest() {
   export ECR_TAG=$_TAG
   files=$(find "${_APP_DIR}/${_MANIFESTS_DIR}/${_STAGE}" -regex '.*\.ya*ml')
 
