@@ -89,7 +89,7 @@ function sync_gpg {
 }
 
 function apply_git_config {
-  git config --global user.signingkey $GNUGPG_PUB_ID
+  git config --global user.signingkey $GNUPG_KEY_ID
   git config --global commit.gpgsign true
 }
 
